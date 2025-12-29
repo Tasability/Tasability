@@ -1249,7 +1249,7 @@ setthreadidentity(7)
 
 end
 
--- Replace the entire section from line ~1040 to ~1300 with this:
+
 
 -- Animation Functions
 local StopAllAnimations -- StopAllAnimations() -> nil
@@ -1295,12 +1295,12 @@ do
 	Reanimate = function(Character)
 		local animateFound = false
 		
-		-- Wait for character to fully load
+	
 		if not Character:FindFirstChild("Humanoid") then
 			Character:WaitForChild("Humanoid", 5)
 		end
 		
-		-- Try to find and disable Animate script
+	
 		if Character:WaitForChild("Animate", 3) then
 			for _, Animate in ipairs(Character:GetDescendants()) do
 				if Animate:IsA("LocalScript") and Animate.Name == "Animate" then
@@ -1324,7 +1324,7 @@ do
 			end
 		end
 		
-		-- If no Animate script found, just log it and continue
+	
 		if not animateFound then
 			ConsoleMessage("[WARNING] Animate script not found - animations will be handled manually")
 		end
@@ -2984,3 +2984,4 @@ end
 
 ConsoleMessage("Tasability",Version,"loaded in",RoundNumber(tick()-ExecutionTick,2),"seconds")
 ConsoleMessage("Type help to see all commands")
+
