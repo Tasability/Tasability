@@ -1,3 +1,16 @@
+-- data roblox cursor xD
+local Cursors = {
+	["ArrowFarCursor"] = {
+		Icon = "rbxasset://textures/Cursors/KeyboardMouse/ArrowFarCursor.png";
+		Size = UDim2.fromOffset(64,64);
+		Offset = Vector2.new(4, 4);
+	};
+	["MouseLockedCursor"] = {
+		Icon = "rbxasset://textures/MouseLockedCursor.png";
+		Size = UDim2.fromOffset(32,32);
+		Offset = Vector2.new(-16,-16);
+	};
+}
 
 -- Constants
 local Version = "V1.2.3"
@@ -2984,4 +2997,5 @@ end
 
 ConsoleMessage("Tasability",Version,"loaded in",RoundNumber(tick()-ExecutionTick,2),"seconds")
 ConsoleMessage("Type help to see all commands")
+
 
