@@ -72,17 +72,8 @@
 
 --//Changelogs
 
--- Added new feauture : Rejoin button, Change fps cap in game, disable particle emitters, disable lighting changers
+-- Fixed Forward, added a keyboard overlay to betterly clear inputs for writing during recording. green = inputs recorded in writing , yellow = inputs not recorded
 
--- Config
-local FPS = 90 -- Put whatever FPS you want here, changes fps cap for the tas.
-local PlaybackInputs = true -- Sets if you want replays to playback your inputs when playing them (AHK connection is required for mouse scroll playback)
-local PlaybackMouseLocation = false -- Sets if you want replays to move your mouse when playing them (glitchy when loading checkpoints)
-local RoundDigits = 5 -- Rounds all numbers when writing, to greatly decrease file size (set to 50 to disable rounding)
-local ReplayStartTime = 1 -- Number of seconds to wait before starting to read the replay
-local FrameBacktrackCount = 500 -- Number of frames to backtrack when frozen to see which keys are currently pressed. Increase as much as your computer can handle
-local MinimumJSONFPS = 1/10 -- Lowest you want your FPS to go while encoding/decoding (higher = faster encoding/decoding, lower = better fps) 1/30: 30 fps, 1/60: 60 fps\
-local BypassAntiExploit = false -- If this is true games with anti cheat (like beans) will not kick you, but there is a chance animations will be broken
 
 
 -- Advanced config
@@ -124,7 +115,7 @@ local Cursors = {
 }
 
 -- Constants
-local Version = "V1.2.3"
+local Version = "V1.2.4"
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
@@ -1050,6 +1041,109 @@ local IgnoreGameProcessedButton = ControlsHeader:Checkbox({
         IgnoreGameProcessed = not IgnoreGameProcessed
     end
 })
+local KeyboardOverlay = ControlsHeader:Checkbox({
+    Label = "Keyboard Overlay",
+    Callback = function(self)
+        local enabled = self.Value
+        if enabled then
+            getgenv().KeyboardOverlayEnabled = true
+            if not getgenv().KeyboardOverlayGui then
+                
+                local overlayGui = Instance.new("ScreenGui")
+                overlayGui.Name = "KeyboardOverlay"
+                overlayGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+                overlayGui.ResetOnSpawn = false
+                overlayGui.DisplayOrder = 9999
+                overlayGui.Parent = Player.PlayerGui
+               
+                local container = Instance.new("Frame")
+                container.Name = "Container"
+                container.Size = UDim2.fromOffset(320, 200)
+                container.Position = UDim2.new(0, 20, 1, -220)
+                container.BackgroundTransparency = 1
+                container.BorderSizePixel = 0
+                container.Parent = overlayGui
+                
+                local function createKey(name, position, size, displayText)
+                    local key = Instance.new("TextLabel")
+                    key.Name = name
+                    key.Size = size
+                    key.Position = position
+                    key.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+                    key.BorderSizePixel = 0
+                    key.Text = displayText or name
+                    key.TextColor3 = Color3.fromRGB(220, 220, 230)
+                    key.TextSize = (size.X.Offset > 70) and 14 or 18
+                    key.Font = Enum.Font.GothamBold
+                    key.Parent = container
+                    
+                    local corner = Instance.new("UICorner")
+                    corner.CornerRadius = UDim.new(0, 6)
+                    corner.Parent = key
+                    
+                    local gradient = Instance.new("UIGradient")
+                    gradient.Color = ColorSequence.new({
+                        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+                        ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
+                    })
+                    gradient.Rotation = 90
+                    gradient.Parent = key
+                    
+                    local stroke = Instance.new("UIStroke")
+                    stroke.Color = Color3.fromRGB(60, 60, 70)
+                    stroke.Thickness = 2
+                    stroke.Transparency = 0.5
+                    stroke.Parent = key
+                    
+                    return key
+                end
+                
+                local keySize = UDim2.fromOffset(45, 45)
+                local spacing = 5
+                
+                local keyW = createKey("W", UDim2.fromOffset(120, 10), keySize)
+                local keyA = createKey("A", UDim2.fromOffset(65, 65), keySize)
+                local keyS = createKey("S", UDim2.fromOffset(120, 65), keySize)
+                local keyD = createKey("D", UDim2.fromOffset(175, 65), keySize)
+                
+                local keyCapsLock = createKey("CapsLock", UDim2.fromOffset(5, 65), UDim2.fromOffset(50, 45), "CAPS")
+                keyCapsLock.TextSize = 12
+                
+                local keyShift = createKey("LeftShift", UDim2.fromOffset(5, 120), UDim2.fromOffset(50, 45), "SHIFT")
+                keyShift.TextSize = 12
+                
+                local keySlash = createKey("Slash", UDim2.fromOffset(175, 10), UDim2.fromOffset(45, 45), "/")
+                
+                local keySpace = createKey("Space", UDim2.fromOffset(65, 120), UDim2.fromOffset(210, 45), "")
+                keySpace.TextSize = 14
+                
+                getgenv().KeyboardOverlayGui = overlayGui
+                getgenv().KeyboardOverlayKeys = {
+                    W = keyW,
+                    A = keyA,
+                    S = keyS,
+                    D = keyD,
+                    LeftShift = keyShift,
+                    RightShift = keyShift,
+                    Space = keySpace,
+                    CapsLock = keyCapsLock,
+                    Slash = keySlash
+                }
+                
+                ConsoleMessage("Keyboard overlay enabled")
+            else
+                getgenv().KeyboardOverlayGui.Enabled = true
+                ConsoleMessage("Keyboard overlay shown")
+            end
+        else
+            getgenv().KeyboardOverlayEnabled = false
+            if getgenv().KeyboardOverlayGui then
+                getgenv().KeyboardOverlayGui.Enabled = false
+                ConsoleMessage("Keyboard overlay hidden")
+            end
+        end
+    end
+})
 local DisableParticles = ControlsHeader:Checkbox({
     Label = "Disable Particle Emitters",
     Callback = function(self)
@@ -1143,7 +1237,6 @@ local DisableLighting = ControlsHeader:Checkbox({
             
             for _, obj in pairs(Lighting:GetChildren()) do
                 if obj:IsA("Atmosphere") then
-                    -- Atmosphere will keep its original properties
                 elseif obj:IsA("BloomEffect") or obj:IsA("BlurEffect") or 
                        obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or 
                        obj:IsA("DepthOfFieldEffect") or obj:IsA("Clouds") then
@@ -2521,7 +2614,7 @@ end
 			if SeekDirection == -1*SeekDirectionMultiplier then
 				SeekDirection = 0
 			end
-		elseif Input.KeyCode == Goforwardkeybind then
+		elseif Input.KeyCode == Goforwardkeybind.Value then
 			-- Stop seeking fowards
 			if SeekDirection == 1*SeekDirectionMultiplier then
 				SeekDirection = 0
@@ -2591,38 +2684,91 @@ do
 			end
 		end
 	end
+	
 	local PressedWriting = {}
-	SteppedConnections.UpdateInputPreview = function()
+
+SteppedConnections.UpdateKeyboardOverlay = function()
+	if getgenv().KeyboardOverlayEnabled and getgenv().KeyboardOverlayKeys then
+		local keys = getgenv().KeyboardOverlayKeys
+		for keyName, keyFrame in pairs(keys) do
+			local isPressed = false
+			
+			if Writing and PressedWriting[keyName] then
+				isPressed = true
+				keyFrame.BackgroundColor3 = Color3.fromRGB(80, 200, 120)
+				keyFrame.BorderColor3 = Color3.fromRGB(100, 255, 150)
+				keyFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+				
+				local stroke = keyFrame:FindFirstChildOfClass("UIStroke")
+				if stroke then
+					stroke.Color = Color3.fromRGB(120, 255, 180)
+					stroke.Transparency = 0.2
+				end
+			elseif not Writing and Pressed[keyName] then
+				isPressed = true
+				keyFrame.BackgroundColor3 = Color3.fromRGB(200, 180, 80)
+				keyFrame.BorderColor3 = Color3.fromRGB(255, 230, 100)
+				keyFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+				
+				local stroke = keyFrame:FindFirstChildOfClass("UIStroke")
+				if stroke then
+					stroke.Color = Color3.fromRGB(255, 240, 120)
+					stroke.Transparency = 0.2
+				end
+			else
+				keyFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+				keyFrame.BorderColor3 = Color3.fromRGB(60, 60, 70)
+				keyFrame.TextColor3 = Color3.fromRGB(220, 220, 230)
+				
+				local stroke = keyFrame:FindFirstChildOfClass("UIStroke")
+				if stroke then
+					stroke.Color = Color3.fromRGB(60, 60, 70)
+					stroke.Transparency = 0.5
+				end
+			end
+			
+			local gradient = keyFrame:FindFirstChildOfClass("UIGradient")
+			if gradient then
+				if isPressed then
+					gradient.Enabled = false
+				else
+					gradient.Enabled = true
+				end
+			end
+		end
+	end
+end
+
+SteppedConnections.UpdateInputPreview = function()
+	for _,Input in pairs(InputBeganQueue) do
+		if Input == "u" or Input == "d" then
+			return
+		end
+		Pressed[Input] = true
+	end
+	for _,Input in pairs(InputEndedQueue) do
+		Pressed[Input] = nil
+	end
+	PressedKeysLabel.Text = "Pressed keys: |"
+	for Input,_ in pairs(Pressed) do
+		PressedKeysLabel.Text = PressedKeysLabel.Text..Input.."|"
+	end
+	
+	if Writing then
 		for _,Input in pairs(InputBeganQueue) do
 			if Input == "u" or Input == "d" then
-				return
-			end
-			Pressed[Input] = true
-		end
-		for _,Input in pairs(InputEndedQueue) do
-			Pressed[Input] = nil
-		end
-		PressedKeysLabel.Text = "Pressed keys: |"
-		for Input,_ in pairs(Pressed) do
-			PressedKeysLabel.Text = PressedKeysLabel.Text..Input.."|"
-		end
-		
-		-- MOVED TO FREEZE LOOP
-		--[[if Writing then
-			for _,Input in pairs(InputBeganQueue) do
-				if Input == "u" or Input == "d" then
-					return
-				end
+			else
 				PressedWriting[Input] = true
 			end
-			for _,Input in pairs(InputEndedQueue) do
-				PressedWriting[Input] = nil
-			end
-			WritingPressedKeysLabel.Text = "|"
-			for Input,_ in pairs(PressedWriting) do
-				WritingPressedKeysLabel.Text = WritingPressedKeysLabel.Text..Input.."|"
-			end
-		end]]
+		end
+		for _,Input in pairs(InputEndedQueue) do
+			PressedWriting[Input] = nil
+		end
+		WritingPressedKeysLabel.Text = "Writing Pressed keys: |"
+		for Input,_ in pairs(PressedWriting) do
+			WritingPressedKeysLabel.Text = WritingPressedKeysLabel.Text..Input.."|"
+            end
+		end
 	end
 end
 
@@ -2974,7 +3120,7 @@ spawn(function() -- Update cursor
 			end
 			
 			if frameCount % 60 == 0 then
-				print("Cursor success")
+				print("{CURSOR DEBUG} LOADED")
 			end
 		end)
 	end
@@ -3106,7 +3252,3 @@ end
 
 ConsoleMessage("Tasability",Version,"loaded in",RoundNumber(tick()-ExecutionTick,2),"seconds")
 ConsoleMessage("Type help to see all commands")
-
-
-
-
