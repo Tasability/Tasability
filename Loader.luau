@@ -74,6 +74,15 @@
 
 -- Fixed Forward, added a keyboard overlay to betterly clear inputs for writing during recording. green = inputs recorded in writing , yellow = inputs not recorded
 
+-- Config
+local FPS = 90 -- Put whatever FPS you want here, changes fps cap for the tas.
+local PlaybackInputs = true -- Sets if you want replays to playback your inputs when playing them (AHK connection is required for mouse scroll playback)
+local PlaybackMouseLocation = false -- Sets if you want replays to move your mouse when playing them (glitchy when loading checkpoints)
+local RoundDigits = 15 -- Rounds all numbers when writing, to greatly decrease file size (set to 50 to disable rounding)
+local ReplayStartTime = 1 -- Number of seconds to wait before starting to read the replay
+local FrameBacktrackCount = 500 -- Number of frames to backtrack when frozen to see which keys are currently pressed. Increase as much as your computer can handle
+local MinimumJSONFPS = 1/10 -- Lowest you want your FPS to go while encoding/decoding (higher = faster encoding/decoding, lower = better fps) 1/30: 30 fps, 1/60: 60 fps\
+local BypassAntiExploit = false -- If this is true games with anti cheat (like beans) will not kick you, but there is a chance animations will be broken
 
 
 -- Advanced config
@@ -3252,3 +3261,4 @@ end
 
 ConsoleMessage("Tasability",Version,"loaded in",RoundNumber(tick()-ExecutionTick,2),"seconds")
 ConsoleMessage("Type help to see all commands")
+
