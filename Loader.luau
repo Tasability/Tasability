@@ -1061,8 +1061,6 @@ local DisableParticles = ControlsHeader:Checkbox({
         end
     end
 })
--- Add this to your Controls section in the GUI
-
 local DisableLighting = ControlsHeader:Checkbox({
     Label = "Disable Lighting Effects",
     Callback = function(self)
@@ -3108,6 +3106,7 @@ end
 
 ConsoleMessage("Tasability",Version,"loaded in",RoundNumber(tick()-ExecutionTick,2),"seconds")
 ConsoleMessage("Type help to see all commands")
+
 
 
 
